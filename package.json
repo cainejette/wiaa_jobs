@@ -1,7 +1,7 @@
 {
-  "name": "job",
+  "name": "wiaa-job",
   "version": "1.0.0",
-  "description": "",
+  "description": "Monitor wiaa's volleyball job listings",
   "main": "jobs.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "cheerio": "^0.20.0",
-    "prepend-file": "^1.3.0"
+    "mailgun-js": "^0.7.7",
+    "nodemailer": "^2.2.1"
   }
 }

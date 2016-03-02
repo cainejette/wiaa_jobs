@@ -1,14 +1,7 @@
 var request = require('request');
 var cheerio = require('cheerio');
 var fs = require('fs');
-var prependFile = require('prepend-file');
-
-var lastRun;
-try {
-  lastRun = require('./last.json');
-} catch (e) {
-  lastRun = 'none';
-}
+var nodemailer = require('nodemailer');
 
 request('http://www.wiaa.com/Jobs.aspx', (err, response, body) => {
   if (!err) {
@@ -48,19 +41,28 @@ request('http://www.wiaa.com/Jobs.aspx', (err, response, body) => {
     });
     
     var volleyballJobs = jobs.filter(job => job.position.toLowerCase().includes('volleyball'));
-    log(volleyballJobs.length + ' volleyball jobs found. Most recent: ' + JSON.stringify(volleyballJobs[0]));
     
-    if (JSON.stringify(volleyballJobs) !== JSON.stringify(lastRun)) {
-      if (lastRun !== 'none') {
-        fs.unlinkSync('./last.json');  
-      }
-        
-      fs.writeFileSync('./last.json', JSON.stringify(volleyballJobs));
-      log('Updated last.json');  
-    }
+    sendMail(volleyballJobs); 
   }
 });
 
-function log(msg) {
-  fs.appendFile('./log.txt', new Date() + ": " + msg + "\n");
+function sendMail(data) {
+  var api_key = 'key-71f190d4fedc27d5a4f9e360f63a683f';
+  var domain = 'sandbox1413bb43378145d3a42aac373b00569b.mailgun.org';
+  var mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
+  
+  var formatted = data.map(job => {
+    return job.date + '\n' + job.position + '\n' + job.location + '\n\n'
+  }).reduce((a,b) => a + b);
+  
+  var mail = {
+    from: 'Caine <me@caine.jette>',
+    to: 'hawaiianbrah@gmail.com',
+    subject: 'Today\'s count: ' + data.length,
+    text: formatted
+  };
+  
+  mailgun.messages().send(mail, function (error, body) {
+    console.log(body);
+  });
 }
